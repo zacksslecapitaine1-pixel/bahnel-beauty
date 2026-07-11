@@ -82,6 +82,7 @@ function FormulairePrestataire({ prestataire, onSave, onClose }) {
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
   const isSousTraitant = form.type_contrat === 'Sous-traitant(e)'
+  const isFormation    = form.type_contrat === 'En formation'
 
   const handleSubmit = async () => {
     if (!form.nom.trim() || !form.prenom.trim()) { toast.error('Nom et prénom requis.'); return }
@@ -134,16 +135,18 @@ function FormulairePrestataire({ prestataire, onSave, onClose }) {
             <div className="flex-1 h-px bg-cendre-100" />
           </div>
           <div className="flex gap-3 mt-2">
-            {['Salarié(e)', 'Sous-traitant(e)'].map(t => (
+            {['Salarié(e)', 'Sous-traitant(e)', 'En formation'].map(t => (
               <button key={t} type="button" onClick={() => set('type_contrat', t)}
                 className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
                   form.type_contrat === t
                     ? t === 'Sous-traitant(e)'
                       ? 'border-violet-500 bg-violet-50 text-violet-700'
-                      : 'border-primary-500 bg-primary-50 text-primary-700'
+                      : t === 'En formation'
+                        ? 'border-amber-500 bg-amber-50 text-amber-700'
+                        : 'border-primary-500 bg-primary-50 text-primary-700'
                     : 'border-cendre-200 bg-white text-cendre-500 hover:border-cendre-300'
                 }`}>
-                {t === 'Sous-traitant(e)' ? <UserCog className="w-4 h-4" /> : <Briefcase className="w-4 h-4" />}
+                {t === 'Sous-traitant(e)' ? <UserCog className="w-4 h-4" /> : t === 'En formation' ? <Award className="w-4 h-4" /> : <Briefcase className="w-4 h-4" />}
                 {t}
               </button>
             ))}
@@ -156,6 +159,16 @@ function FormulairePrestataire({ prestataire, onSave, onClose }) {
                 <li>• Aucun salaire de base — rémunéré(e) uniquement sur ses prestations</li>
                 <li>• Le <strong>taux de commission</strong> représente sa part sur chaque prestation réalisée</li>
                 <li>• Pas de lien de subordination salariale avec le salon</li>
+              </ul>
+            </div>
+          )}
+          {/* Explication en formation */}
+          {isFormation && (
+            <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700 space-y-1">
+              <p className="font-semibold flex items-center gap-1.5"><Award className="w-3.5 h-3.5" /> En formation</p>
+              <ul className="space-y-0.5 pl-2">
+                <li>• Personne en cours d'apprentissage au sein du salon</li>
+                <li>• Salaire de base et taux de commission restent modifiables librement</li>
               </ul>
             </div>
           )}
@@ -267,6 +280,7 @@ function FichePerf({ p, onClose }) {
     ? (typeof p.specialites === 'string' ? JSON.parse(p.specialites) : p.specialites)
     : []
   const isST = p.type_contrat === 'Sous-traitant(e)'
+  const isFo = p.type_contrat === 'En formation'
 
   useEffect(() => {
     Promise.all([
@@ -300,8 +314,8 @@ function FichePerf({ p, onClose }) {
             {p.poste && <p className="text-sm text-cendre-500">{p.poste}</p>}
             <div className="flex flex-wrap gap-2 mt-1.5">
               <span className={`badge ${p.actif ? 'badge-green' : 'badge-gray'}`}>{p.actif ? 'Actif(ve)' : 'Inactif(ve)'}</span>
-              <span className={`badge ${isST ? 'badge-violet' : 'badge-blue'}`}>
-                {isST ? '🔧 Sous-traitant(e)' : '👔 Salarié(e)'}
+              <span className={`badge ${isST ? 'badge-violet' : isFo ? 'badge-orange' : 'badge-blue'}`}>
+                {isST ? '🔧 Sous-traitant(e)' : isFo ? '🎓 En formation' : '👔 Salarié(e)'}
               </span>
               <span className="badge badge-orange">{p.taux_commission}%</span>
               {p.last_login && (
@@ -328,9 +342,9 @@ function FichePerf({ p, onClose }) {
         )}
 
         {/* Infos contrat */}
-        <div className={`p-4 rounded-xl border ${isST ? 'bg-violet-50 border-violet-200' : 'bg-primary-50 border-primary-100'}`}>
-          <p className={`text-xs font-semibold uppercase tracking-wide mb-3 ${isST ? 'text-violet-700' : 'text-primary-700'}`}>
-            {isST ? '🔧 Contrat sous-traitance' : '💼 Contrat salarié'}
+        <div className={`p-4 rounded-xl border ${isST ? 'bg-violet-50 border-violet-200' : isFo ? 'bg-amber-50 border-amber-200' : 'bg-primary-50 border-primary-100'}`}>
+          <p className={`text-xs font-semibold uppercase tracking-wide mb-3 ${isST ? 'text-violet-700' : isFo ? 'text-amber-700' : 'text-primary-700'}`}>
+            {isST ? '🔧 Contrat sous-traitance' : isFo ? '🎓 En formation' : '💼 Contrat salarié'}
           </p>
           {!isST && (
             <div className="flex justify-between text-sm mb-1">
@@ -429,21 +443,25 @@ export default function PrestatairesPage() {
   const close  = () => { setModal(null); setSelected(null) }
   const onSave = () => { charger(); close() }
 
-  const salaries     = prestataires.filter(p => p.type_contrat !== 'Sous-traitant(e)' && p.actif)
+  const salaries      = prestataires.filter(p => p.type_contrat !== 'Sous-traitant(e)' && p.type_contrat !== 'En formation' && p.actif)
   const sousTraitants = prestataires.filter(p => p.type_contrat === 'Sous-traitant(e)' && p.actif)
-  const inactifs      = prestataires.filter(p => !p.actif)
+  const enFormation    = prestataires.filter(p => p.type_contrat === 'En formation' && p.actif)
+  const inactifs       = prestataires.filter(p => !p.actif)
 
   const Carte = ({ p }) => {
     const specs  = p.specialites
       ? (typeof p.specialites === 'string' ? JSON.parse(p.specialites) : p.specialites) : []
     const isST   = p.type_contrat === 'Sous-traitant(e)'
+    const isFo   = p.type_contrat === 'En formation'
     return (
       <div className={`card hover:shadow-medium transition-all group ${!p.actif ? 'opacity-60' : ''}`}>
         <div className="flex items-start gap-3">
           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-display font-semibold text-xl shrink-0 transition-all
             ${isST
               ? 'bg-violet-100 text-violet-700 group-hover:bg-violet-600 group-hover:text-white'
-              : 'bg-primary-100 text-primary-700 group-hover:bg-primary-600 group-hover:text-white'
+              : isFo
+                ? 'bg-amber-100 text-amber-700 group-hover:bg-amber-600 group-hover:text-white'
+                : 'bg-primary-100 text-primary-700 group-hover:bg-primary-600 group-hover:text-white'
             }`}>
             {p.prenom?.[0]}{p.nom?.[0]}
           </div>
@@ -453,8 +471,8 @@ export default function PrestatairesPage() {
                 <p className="font-semibold text-cendre-900">{p.prenom} {p.nom}</p>
                 {p.poste && <p className="text-xs text-cendre-500">{p.poste}</p>}
               </div>
-              <span className={`badge shrink-0 text-xs ${isST ? 'badge-violet' : 'badge-blue'}`}>
-                {isST ? '🔧 Sous-traitant' : '👔 Salarié'}
+              <span className={`badge shrink-0 text-xs ${isST ? 'badge-violet' : isFo ? 'badge-orange' : 'badge-blue'}`}>
+                {isST ? '🔧 Sous-traitant' : isFo ? '🎓 En formation' : '👔 Salarié'}
               </span>
             </div>
             {/* Spécialités (max 3 affichées) */}
@@ -505,6 +523,7 @@ export default function PrestatairesPage() {
           </h1>
           <p className="text-sm text-cendre-400 mt-0.5">
             {salaries.length} salarié(s) · <span className="text-violet-600 font-medium">{sousTraitants.length} sous-traitant(s)</span>
+            {enFormation.length > 0 && <> · <span className="text-amber-600 font-medium">{enFormation.length} en formation</span></>}
           </p>
         </div>
         <button onClick={() => setModal('add')} className="btn-primary">
@@ -520,6 +539,7 @@ export default function PrestatairesPage() {
         <div className="space-y-7">
           <Section title="Employé(e)s salarié(e)s" items={salaries}      count={salaries.length} />
           <Section title="Sous-traitant(e)s"       items={sousTraitants} count={sousTraitants.length} />
+          <Section title="En formation"            items={enFormation}   count={enFormation.length} />
           <Section title="Inactif(ve)s"            items={inactifs}      count={inactifs.length} />
         </div>
       )}

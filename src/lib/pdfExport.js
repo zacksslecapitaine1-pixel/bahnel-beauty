@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { LOGO_BAHNEL_BASE64 } from '../assets/logoBahnelBase64.js'
 
 // ================================================================
 //  CHARTE GRAPHIQUE — BAHNEL BEAUTY INSTITUTE
@@ -68,30 +69,32 @@ function drawLuxeHeader(doc, salonInfo = {}) {
     doc.circle(W - 30, 22, i * 9, 'S')
   }
 
-  // Losanges décoratifs gauche
-  const drawDiamond = (cx, cy, size) => {
-    doc.setDrawColor(...C.or)
-    doc.setLineWidth(0.4)
-    doc.line(cx, cy - size, cx + size, cy)
-    doc.line(cx + size, cy, cx, cy + size)
-    doc.line(cx, cy + size, cx - size, cy)
-    doc.line(cx - size, cy, cx, cy - size)
+  // Logo Maison Bahnel dans un médaillon blanc
+  const logoCx = 25, logoCy = 23, logoR = 15
+  doc.setFillColor(...C.blanc)
+  doc.circle(logoCx, logoCy, logoR, 'F')
+  doc.setDrawColor(...C.or)
+  doc.setLineWidth(0.5)
+  doc.circle(logoCx, logoCy, logoR, 'S')
+  try {
+    const logoSize = logoR * 1.72
+    doc.addImage(LOGO_BAHNEL_BASE64, 'JPEG', logoCx - logoSize / 2, logoCy - logoSize / 2, logoSize, logoSize)
+  } catch (e) {
+    // si l'image ne peut pas être chargée, le médaillon doré reste affiché seul
   }
-  drawDiamond(26, 22, 4)
-  drawDiamond(34, 22, 2)
 
   // Nom du salon
   doc.setTextColor(...C.blanc)
   doc.setFontSize(18)
   doc.setFont('helvetica', 'bold')
-  doc.text((salonInfo.nom || 'BAHNEL BEAUTY INSTITUTE').toUpperCase(), 44, 17)
+  doc.text((salonInfo.nom || 'BAHNEL BEAUTY INSTITUTE').toUpperCase(), 46, 17)
 
   // Sous-titre salon
   doc.setTextColor(...C.or)
   doc.setFontSize(7.5)
   doc.setFont('helvetica', 'normal')
   doc.setCharSpace(2.5)
-  doc.text('SALON DE BEAUTÉ & BIEN-ÊTRE', 44, 25)
+  doc.text('SALON DE BEAUTÉ & BIEN-ÊTRE', 46, 25)
   doc.setCharSpace(0)
 
   // Infos contact (droite)
@@ -148,14 +151,14 @@ function drawLuxeFooter(doc, salonInfo = {}, numero = '') {
 //  SECTION TITRE (avec lignes ornées)
 // ================================================================
 function sectionTitle(doc, y, title, W) {
-  orneLine(doc, 14, y, 14 + 18, y, C.or)
+  orneLine(doc, 14, y, 14 + 18, C.or)
   doc.setTextColor(...C.or)
   doc.setFontSize(7.5)
   doc.setFont('helvetica', 'bold')
   doc.setCharSpace(1.8)
   doc.text(title.toUpperCase(), 36, y + 0.5)
   doc.setCharSpace(0)
-  orneLine(doc, 36 + doc.getTextWidth(title.toUpperCase() * 1.05) + 8, y, W - 14, y, C.gris4)
+  orneLine(doc, 36 + doc.getTextWidth(title.toUpperCase()) * 1.05 + 8, y, W - 14, C.gris4)
   return y + 6
 }
 
