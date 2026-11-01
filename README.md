@@ -1,16 +1,52 @@
-# React + Vite
+# Bahnel Beauty Institute — Application de gestion de salon
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Application web de gestion complète pour un institut de beauté : rendez-vous, clients, prestations, prestataires, stock, ventes, finances et rapports.
 
-Currently, two official plugins are available:
+**Démo :** https://zacksslecapitaine1-pixel.github.io/bahnel-beauty/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Fonctionnalités
 
-## React Compiler
+- Tableau de bord avec graphiques (chiffre d'affaires, rendez-vous, performances)
+- Gestion des rendez-vous, clients et catalogue de prestations
+- Espace prestataire (clients, ventes, stock, commissions)
+- Produits, fournisseurs, mouvements de stock
+- Ventes, factures, paiements, dépenses et finances
+- Rapports et export PDF
+- Notifications et paramètres
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Stack technique
 
-## Expanding the ESLint configuration
+React 18 · Vite · Tailwind CSS · React Router (HashRouter) · Zustand · Supabase · Recharts · jsPDF
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Architecture
+
+```
+bahnel-beauty/
+├── src/
+│   ├── pages/            Dashboard, rendez-vous, clients, prestations, prestataires,
+│   │                     produits, fournisseurs, ventes, finances, rapports, paramètres
+│   ├── components/       layout (Navbar, Sidebar) et composants UI partagés
+│   ├── store/            état global (Zustand)
+│   ├── lib/              client Supabase, export PDF
+│   └── assets/
+├── supabase_schema.sql   schéma de la base (18 tables)
+├── vite.config.js
+└── .github/workflows/    déploiement GitHub Pages
+```
+
+## Installation
+
+```bash
+npm install
+npm run dev
+```
+
+Au premier lancement, la page **Setup** demande l'URL et la clé publique (anon) de votre projet Supabase. Exécutez d'abord `supabase_schema.sql` dans le SQL Editor de Supabase.
+
+## Déploiement
+
+Le workflow GitHub Actions construit l'application et la publie sur GitHub Pages à chaque push sur `master`.
+
+## Auteur
+
+Créé par **Zackss (Oumate Razakou)** — [Dev.zak](https://dev-zak.netlify.app), développeur Full Stack & automatisation IA à Lomé, Togo.
